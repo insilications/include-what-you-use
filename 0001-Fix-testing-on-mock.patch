@@ -1,7 +1,7 @@
 From 450ee52bc49d934ee1086a27fca3b2d6d593a731 Mon Sep 17 00:00:00 2001
 From: Francisco Boni <boboniboni@gmail.com>
 Date: Sun, 17 Jan 2021 05:07:21 -0300
-Subject: [PATCH] Fix testing on mock
+Subject: [PATCH 1/2] Fix testing on mock
 
 ---
  CMakeLists.txt | 2 +-

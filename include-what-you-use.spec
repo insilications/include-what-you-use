@@ -4,10 +4,10 @@
 #
 %define keepstatic 1
 Name     : include-what-you-use
-Version  : 8.0
-Release  : 2
-URL      : file:///aot/build/clearlinux/packages/include-what-you-use/include-what-you-use-.tar.gz
-Source0  : file:///aot/build/clearlinux/packages/include-what-you-use/include-what-you-use-.tar.gz
+Version  : 2
+Release  : 1
+URL      : file:///aot/build/clearlinux/packages/include-what-you-use/include-what-you-use-2.tar.gz
+Source0  : file:///aot/build/clearlinux/packages/include-what-you-use/include-what-you-use-2.tar.gz
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : LGPL-2.0+
@@ -32,13 +32,13 @@ BuildRequires : libstdc++
 BuildRequires : libstdc++-dev
 BuildRequires : libxml2-dev
 BuildRequires : libxml2-staticdev
-BuildRequires : llvm11
-BuildRequires : llvm11-bin
-BuildRequires : llvm11-data
-BuildRequires : llvm11-dev
-BuildRequires : llvm11-lib
-BuildRequires : llvm11-libexec
-BuildRequires : llvm11-staticdev
+BuildRequires : llvm12
+BuildRequires : llvm12-bin
+BuildRequires : llvm12-data
+BuildRequires : llvm12-dev
+BuildRequires : llvm12-lib
+BuildRequires : llvm12-libexec
+BuildRequires : llvm12-staticdev
 BuildRequires : ncurses-dev
 BuildRequires : pkgconfig(libedit)
 BuildRequires : pkgconfig(libffi)
@@ -93,7 +93,7 @@ unset https_proxy
 unset no_proxy
 export SSL_CERT_FILE=/var/cache/ca-certs/anchors/ca-certificates.crt
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1615499587
+export SOURCE_DATE_EPOCH=1617796931
 mkdir -p clr-build
 pushd clr-build
 export GCC_IGNORE_WERROR=1
@@ -134,39 +134,50 @@ export CCACHE_BASEDIR=/builddir/build/BUILD
 #export CCACHE_DEBUG=true
 #export CCACHE_NODIRECT=true
 ## altflags_pgo end
+if [ ! -f status.pgo ]; then
+echo PGO Phase 1
 export CFLAGS="${CFLAGS_GENERATE}"
 export CXXFLAGS="${CXXFLAGS_GENERATE}"
 export FFLAGS="${FFLAGS_GENERATE}"
 export FCFLAGS="${FCFLAGS_GENERATE}"
 export LDFLAGS="${LDFLAGS_GENERATE}"
-%cmake .. -DCMAKE_PREFIX_PATH=/usr/lib64/clang/11.0.0 \
+%cmake .. -DCMAKE_PREFIX_PATH=/usr/lib64/clang/12.0.0 \
 -DCMAKE_INSTALL_PREFIX=/usr \
--DCMAKE_BUILD_TYPE=Release
+-DCMAKE_BUILD_TYPE=None \
+-DIWYU_LINK_CLANG_DYLIB=OFF \
+-DCMAKE_BUILD_TYPE:STRING=None
 make  %{?_smp_mflags}  V=1 VERBOSE=1
 ## ccache stats
 ccache -s
 ## ccache stats
 
 sudo cp bin/include-what-you-use /usr/bin/include-what-you-use
-make test V=1 VERBOSE=1
-CTEST_OUTPUT_ON_FAILURE=1 ctest -V
-find . -type f,l -not -name '*.gcno' -delete -print
+make test -j1 V=1 VERBOSE=1
+CTEST_OUTPUT_ON_FAILURE=1 ctest -j1 -V
+find . -type f,l -not -name '*.gcno' -not -name 'status.pgo' -delete -print
+echo USED > status.pgo
+fi
+if [ -f status.pgo ]; then
+echo PGO Phase 2
 export CFLAGS="${CFLAGS_USE}"
 export CXXFLAGS="${CXXFLAGS_USE}"
 export FFLAGS="${FFLAGS_USE}"
 export FCFLAGS="${FCFLAGS_USE}"
 export LDFLAGS="${LDFLAGS_USE}"
-%cmake .. -DCMAKE_PREFIX_PATH=/usr/lib64/clang/11.0.0 \
+%cmake .. -DCMAKE_PREFIX_PATH=/usr/lib64/clang/12.0.0 \
 -DCMAKE_INSTALL_PREFIX=/usr \
--DCMAKE_BUILD_TYPE=Release
+-DCMAKE_BUILD_TYPE=None \
+-DIWYU_LINK_CLANG_DYLIB=OFF \
+-DCMAKE_BUILD_TYPE:STRING=None
 make  %{?_smp_mflags}  V=1 VERBOSE=1
 ## ccache stats
 ccache -s
 ## ccache stats
+fi
 popd
 
 %install
-export SOURCE_DATE_EPOCH=1615499587
+export SOURCE_DATE_EPOCH=1617796931
 rm -rf %{buildroot}
 pushd clr-build
 %make_install
@@ -185,6 +196,8 @@ popd
 %defattr(-,root,root,-)
 /usr/share/include-what-you-use/boost-1.64-all-private.imp
 /usr/share/include-what-you-use/boost-1.64-all.imp
+/usr/share/include-what-you-use/boost-1.75-all-private.imp
+/usr/share/include-what-you-use/boost-1.75-all.imp
 /usr/share/include-what-you-use/boost-all-private.imp
 /usr/share/include-what-you-use/boost-all.imp
 /usr/share/include-what-you-use/clang-6.intrinsics.imp
@@ -194,6 +207,8 @@ popd
 /usr/share/include-what-you-use/gcc.symbols.imp
 /usr/share/include-what-you-use/iwyu.gcc.imp
 /usr/share/include-what-you-use/libcxx.imp
+/usr/share/include-what-you-use/python2.7.imp
+/usr/share/include-what-you-use/python3.8.imp
 /usr/share/include-what-you-use/qt4.imp
 /usr/share/include-what-you-use/qt5_11.imp
 /usr/share/include-what-you-use/qt5_15.imp

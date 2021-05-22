@@ -23,7 +23,6 @@ libstdc++-dev
 libxml2-dev
 libxml2-staticdev
 llvm
-llvm-abi
 llvm-bin
 llvm-data
 llvm-dev
